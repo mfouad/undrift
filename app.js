@@ -54,6 +54,7 @@
     $('#bg').style.backgroundImage = g.bg === 'image' && /^https?:\/\//i.test(g.bgImage) ? 'url("' + encodeURI(g.bgImage) + '")' : '';
     $('#launcher').classList.toggle('nolabels', !S.launcher.labels);
     $('#date').hidden = !g.showDate;
+    $('#progress').hidden = !g.showProgress;
   }
   function renderClock() {
     var d = new Date(), g = S.general, h = d.getHours(), m = String(d.getMinutes()).padStart(2, '0');
@@ -65,6 +66,24 @@
     $('#date').textContent = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     var part = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
     $('#greet').textContent = part + (g.name ? ', ' + g.name : '');
+    if (g.showProgress) renderProgress(d);
+  }
+  function renderProgress(d) {
+    var p = periodProgress(d, S.general.weekStart);
+    var endDay = new Date(p.week.end - 1).toLocaleDateString(undefined, { weekday: 'short' });
+    var info = {
+      day: fmtLeft(p.day.left) + ' left',
+      week: fmtLeft(p.week.left) + ' left · ends ' + endDay,
+      month: Math.ceil(p.month.left / 86400000) + ' days left'
+    };
+    if (p.month.left < 86400000) info.month = 'last day';
+    ['day', 'week', 'month'].forEach(function (k) {
+      var row = $('.prog[data-p="' + k + '"]'), pct = Math.floor(p[k].frac * 100);
+      row.querySelector('.prog-bar').style.width = (p[k].frac * 100).toFixed(2) + '%';
+      row.querySelector('.prog-info').textContent = pct + '% · ' + info[k];
+      row.title = k.charAt(0).toUpperCase() + k.slice(1) + ' is ' + pct + '% done';
+      row.classList.toggle('late', p[k].frac >= 0.8);
+    });
   }
 
   /* ---------- sound + speech ---------- */

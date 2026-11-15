@@ -38,8 +38,17 @@
 
 <main class="layout">
   <section class="hero">
-    <div class="clock" id="clock">--:--</div>
-    <div class="date" id="date"></div>
+    <div class="hero-top">
+    <div class="when">
+      <div class="clock" id="clock">--:--</div>
+      <div class="date" id="date"></div>
+    </div>
+    <div class="progress" id="progress">
+      <div class="prog" data-p="day"><span class="prog-name">Day</span><div class="prog-track"><div class="prog-bar"></div></div><span class="prog-info"></span></div>
+      <div class="prog" data-p="week"><span class="prog-name">Week</span><div class="prog-track"><div class="prog-bar"></div></div><span class="prog-info"></span></div>
+      <div class="prog" data-p="month"><span class="prog-name">Month</span><div class="prog-track"><div class="prog-bar"></div></div><span class="prog-info"></span></div>
+    </div>
+    </div>
 
     <form class="ask" id="askForm" autocomplete="off">
       <div class="askbox">
@@ -113,6 +122,11 @@
       <label class="row"><span>24-hour clock</span><input data-k="general.h24" type="checkbox" class="sw"></label>
       <label class="row"><span>Show seconds</span><input data-k="general.showSeconds" type="checkbox" class="sw"></label>
       <label class="row"><span>Show date</span><input data-k="general.showDate" type="checkbox" class="sw"></label>
+      <label class="row"><span>Show day / week / month progress</span><input data-k="general.showProgress" type="checkbox" class="sw"></label>
+      <label class="row"><span>Week starts on</span>
+        <select data-k="general.weekStart" data-num>
+          <option value="1">Monday</option><option value="0">Sunday</option><option value="6">Saturday</option>
+        </select></label>
       <label class="row"><span>Accent colour</span><input data-k="general.accent" type="color"></label>
       <label class="row"><span>Background</span>
         <select data-k="general.bg">

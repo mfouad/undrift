@@ -1,6 +1,6 @@
 /* Defaults and pure logic (no DOM). */
 var DEFAULTS = {
-  general: { theme: 'auto', name: '', h24: false, showSeconds: false, showDate: true, accent: '#ff7a59', bg: 'aurora', bgImage: '' },
+  general: { theme: 'auto', name: '', h24: false, showSeconds: false, showDate: true, showProgress: true, weekStart: 1, accent: '#ff7a59', bg: 'aurora', bgImage: '' },
   pomodoro: { work: 25, short: 5, long: 15, longEvery: 4, autoBreaks: true, autoWork: false,
               sound: true, notify: true, speak: true, volume: 0.7 },
   chime: { enabled: true, interval: 30, beep: true, speak: true, tone: 'warm', volume: 0.6,
@@ -46,6 +46,25 @@ function deepMerge(base, over) {
     return out;
   }
   return over === undefined ? base : over;
+}
+
+/* Day / week / month progress. weekStart: 0 = Sunday, 1 = Monday, 6 = Saturday. */
+function periodProgress(d, weekStart) {
+  var y = d.getFullYear(), mo = d.getMonth(), day = d.getDate();
+  var dayStart = new Date(y, mo, day), dayEnd = new Date(y, mo, day + 1);
+  var back = (d.getDay() - (Number(weekStart) || 0) + 7) % 7;
+  var wkStart = new Date(y, mo, day - back), wkEnd = new Date(y, mo, day - back + 7);
+  var moStart = new Date(y, mo, 1), moEnd = new Date(y, mo + 1, 1);
+  function part(a, b) {
+    return { start: a, end: b, frac: Math.min(1, Math.max(0, (d - a) / (b - a))), left: Math.max(0, b - d) };
+  }
+  return { day: part(dayStart, dayEnd), week: part(wkStart, wkEnd), month: part(moStart, moEnd) };
+}
+function fmtLeft(ms) {
+  var min = Math.floor(ms / 60000), dd = Math.floor(min / 1440), h = Math.floor(min % 1440 / 60), m = min % 60;
+  if (dd) return dd + 'd ' + h + 'h';
+  if (h) return h + 'h ' + m + 'm';
+  return m + 'm';
 }
 
 /* Pomodoro phase logic — deterministic so page and background agree. */
