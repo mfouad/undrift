@@ -375,3 +375,18 @@ body.has-tip .layout { padding-bottom: 54px; }
 .tile.sg { cursor: grab; }
 .ver { font-size: 11px; font-weight: 500; color: var(--dim); letter-spacing: 0; align-self: flex-end; margin-bottom: 3px; }
 .drawer-head .ver { margin-left: 6px; }
+.task { touch-action: none; user-select: none; cursor: grab; }
+.task.moving { cursor: grabbing; z-index: 3; opacity: .92; box-shadow: 0 0 0 2px var(--accent), 0 8px 22px var(--shadow); }
+.chk-btn {
+  flex: none; width: 16px; height: 16px; margin-top: 1px; border-radius: 50%; padding: 0; cursor: pointer;
+  border: 1.6px solid currentColor; background: transparent; color: var(--fg); opacity: .7;
+  display: grid; place-items: center; transition: transform .15s, background .15s, opacity .15s;
+}
+.chk-btn:hover { opacity: 1; transform: scale(1.15); background: color-mix(in srgb, var(--short) 30%, transparent); }
+.chk-btn::after { content: ""; width: 7px; height: 4px; border: 2px solid transparent; border-top: 0; border-right: 0; transform: translateY(-1px) rotate(-45deg); }
+.chk-btn:hover::after { border-color: currentColor; opacity: .6; }
+.task.done .chk-btn { background: var(--short); border-color: var(--short); color: #0e1220; opacity: 1; }
+.task.done .chk-btn::after { border-color: #0e1220; opacity: 1; }
+.task.done { border-left-color: var(--short); background: color-mix(in srgb, var(--short) 18%, var(--panel)); }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+.confetti i { position: absolute; left: 0; top: 0; width: 8px; height: 12px; border-radius: 2px; will-change: transform; }

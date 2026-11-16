@@ -296,6 +296,8 @@ var TIPS = [
   { id: 'launch-count', text: 'The small ×3 next to an app is how many times you opened it today. It resets at midnight.' },
   { id: 'start-session', text: 'Press Start session above the calendar to plan the next 4 hours in pomos.' },
   { id: 'plan-slot', text: 'Click any empty calendar slot to plan a 30-minute or 1-hour pomo. Click a block to edit it or mark it done.' },
+  { id: 'drag-task', text: 'Drag a planned block up or down the calendar to move it. It snaps to 30-minute slots.' },
+  { id: 'tick-done', text: 'Tick the circle on a calendar block when you finish it — you get a little celebration and a count of what you got done today.' },
   { id: 'full-day', text: 'Switch the calendar to Full day to see everything you planned today.' },
   { id: 'pomo-task', text: 'When a planned block is running, its name shows under the pomodoro timer.' },
   { id: 'task-start', text: 'When a planned block starts, Undrift says its name and shows a notification, using your Pomodoro sound settings.' },

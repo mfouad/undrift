@@ -575,7 +575,86 @@
     if (navigator.locks) navigator.locks.request('fh-task', { ifAvailable: true }, function (l) { return l ? run() : null; });
     else run();
   }
+  /* Ticking a block done is a big deal: confetti, a bright chime, and a count for today. */
+  function toggleDone(t, b) {
+    t.done = !t.done; savePlan();
+    if (t.done) celebrate(t, b);
+    renderCal(true); renderPomo();
+  }
+  function celebrate(t, b) {
+    var d0 = new Date(); d0.setHours(0, 0, 0, 0);
+    var n = PL.tasks.filter(function (x) { return x.done && x.start >= d0.getTime() && x.start < d0.getTime() + 86400000; }).length;
+    var cheers = ['Done!', 'Nailed it!', 'Crushed it!', 'One down!', 'Boom!', 'Shipped!'];
+    toast('🎉 ' + cheers[Math.floor(Math.random() * cheers.length)] + ' ' + t.title + ' · ' + n + ' done today');
+    var r = b.getBoundingClientRect();
+    confetti(r.left + 18, r.top + r.height / 2);
+    checkSound().then(function (ok) { if (ok) Sound.play('done', Math.max(0.3, S.pomodoro.volume)); });
+  }
+  function confetti(x, y) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var layer = el('div', { class: 'confetti' }), cs = getComputedStyle(document.documentElement);
+    var colors = [cs.getPropertyValue('--accent'), '#ffd23f', '#5fd3a8', '#6fb0ff', '#ff6b9a', '#b28dff'], bits = [];
+    for (var i = 0; i < 90; i++) {
+      var p = el('i'), a = Math.random() * Math.PI * 2, v = 4 + Math.random() * 9;
+      p.style.background = colors[i % colors.length];
+      if (i % 3 === 0) p.style.borderRadius = '50%';
+      layer.appendChild(p);
+      bits.push({ el: p, x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 7, r: Math.random() * 360, vr: Math.random() * 20 - 10 });
+    }
+    document.body.appendChild(layer);
+    var t0 = performance.now();
+    (function frame(now) {
+      var k = (now - t0) / 1600;
+      bits.forEach(function (q) {
+        q.vy += 0.35; q.vx *= 0.985; q.x += q.vx; q.y += q.vy; q.r += q.vr;
+        q.el.style.transform = 'translate(' + q.x + 'px,' + q.y + 'px) rotate(' + q.r + 'deg)';
+        q.el.style.opacity = String(Math.max(0, 1 - k * k));
+      });
+      if (k < 1) requestAnimationFrame(frame); else layer.remove();
+    })(t0);
+  }
+
+  /* Drag a planned block to move it; it snaps to 30-minute slots. A press without
+     movement opens the editor instead. */
+  var calDragging = false;
+  function taskDrag(e, t, b, r, grid) {
+    if (e.button !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    var span = r.b - r.a, dur = t.dur * 60000, y0 = e.clientY, moved = false, newStart = t.start;
+    var body = $('#calBody'), rect = grid.getBoundingClientRect();
+    var grab = (e.clientY - rect.top) / rect.height * span + r.a - t.start;   // where in the block it was grabbed
+    var td = b.querySelector('.td'), tdText = td.textContent;
+    calDragging = true;
+    try { b.setPointerCapture(e.pointerId); } catch (err) {}
+    function move(ev) {
+      if (!moved && Math.abs(ev.clientY - y0) < 4) return;
+      if (!moved) { moved = true; b.classList.add('moving'); }
+      if (PL.mode === 'day') {   // scroll the day view when dragging near its edges
+        var br = body.getBoundingClientRect();
+        if (ev.clientY < br.top + 24) body.scrollTop -= 12; else if (ev.clientY > br.bottom - 24) body.scrollTop += 12;
+      }
+      rect = grid.getBoundingClientRect();
+      var tm = (ev.clientY - rect.top) / rect.height * span + r.a - grab;
+      newStart = r.a + Math.round((tm - r.a) / SLOT) * SLOT;
+      newStart = Math.max(r.a, Math.min(r.b - dur, newStart));
+      b.style.top = ((newStart - r.a) / span * 100).toFixed(3) + '%';
+      td.textContent = shortTime(newStart);
+    }
+    function up() {
+      b.removeEventListener('pointermove', move); b.removeEventListener('pointerup', up); b.removeEventListener('pointercancel', up);
+      calDragging = false; b.classList.remove('moving');
+      if (!moved) { td.textContent = tdText; return openSlot(t, t.start); }
+      if (newStart !== t.start) {
+        t.start = newStart;
+        if (newStart > Date.now()) t.announced = false;   // announce again when its new time comes
+        savePlan(); toast('Moved to ' + fmtTime(new Date(newStart)));
+      }
+      renderCal(true); renderPomo();
+    }
+    b.addEventListener('pointermove', move); b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+  }
   function renderCal(force) {
+    if (calDragging) return;
     var r = calRange(), act = sessionActive(), now = Date.now(), cal = $('#cal'), body = $('#calBody');
     cal.dataset.mode = PL.mode;
     $$('#calMode button').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === PL.mode); });
@@ -608,10 +687,14 @@
     PL.tasks.filter(function (t) { return t.start < r.b && t.start + t.dur * 60000 > r.a; }).forEach(function (t) {
       var end = t.start + t.dur * 60000, isNow = !t.done && t.start <= now && now < end;
       var b = el('div', { class: 'task' + (t.done ? ' done' : '') + (isNow ? ' now' : ''), title: t.title },
-        [el('span', { class: 'tt', text: (t.done ? '✓ ' : '') + t.title }), el('span', { class: 'td', text: t.dur === 60 ? '1h' : '30m' })]);
+        [el('button', { type: 'button', class: 'chk-btn', title: t.done ? 'Mark as not done' : 'Mark as done', 'aria-label': 'Done',
+            onpointerdown: function (e) { e.stopPropagation(); },
+            onclick: function (e) { e.stopPropagation(); toggleDone(t, b); } }),
+         el('span', { class: 'tt', text: t.title }), el('span', { class: 'td', text: t.dur === 60 ? '1h' : '30m' })]);
       var top = Math.max(t.start, r.a);
       b.style.top = pct(top); b.style.height = 'calc(' + ((Math.min(end, r.b) - top) / span * 100) + '% - 4px)';
-      b.addEventListener('click', function (e) { e.stopPropagation(); openSlot(t, t.start); });
+      b.addEventListener('click', function (e) { e.stopPropagation(); });
+      b.addEventListener('pointerdown', function (e) { taskDrag(e, t, b, r, grid); });
       grid.appendChild(b);
     });
     grid.appendChild(el('div', { class: 'now-line', id: 'nowLine' }));

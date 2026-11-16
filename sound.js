@@ -13,6 +13,8 @@
   };
   // Pomodoro end: rising, mid register (not shrill)
   var POMO = [{ f: 293.7, t: 0, d: 0.9 }, { f: 370.0, t: 0.28, d: 0.9 }, { f: 440.0, t: 0.56, d: 1.6 }];
+  // Task done: quick bright arpeggio, C5 E5 G5 C6
+  var DONE = [{ f: 523.3, t: 0, d: 0.5 }, { f: 659.3, t: 0.09, d: 0.5 }, { f: 784.0, t: 0.18, d: 0.6 }, { f: 1046.5, t: 0.3, d: 1.4 }];
 
   function getCtx() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -20,7 +22,7 @@
     return ctx;
   }
   function play(kind, vol) {
-    var notes = kind === 'pomo' ? POMO : (TONES[String(kind).replace('chime:', '')] || TONES.warm);
+    var notes = kind === 'done' ? DONE : kind === 'pomo' ? POMO : (TONES[String(kind).replace('chime:', '')] || TONES.warm);
     var c = getCtx();
     var master = c.createGain();
     master.gain.value = Math.max(0, Math.min(1, vol == null ? 0.6 : vol)) * 0.5;
