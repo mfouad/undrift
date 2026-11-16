@@ -184,8 +184,8 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
 
 /* icon colour modes: colour comes back on hover / keyboard focus */
 .ico { transition: transform .12s, filter .2s, opacity .2s; }
-body[data-icons="muted"] .tile .ico { filter: saturate(.25); opacity: .8; }
-body[data-icons="grey"] .tile .ico { filter: grayscale(1) contrast(.9); opacity: .7; }
+body[data-icons="muted"] #launcher .tile .ico { filter: saturate(.25); opacity: .8; }
+body[data-icons="grey"] #launcher .tile .ico { filter: grayscale(1) contrast(.9); opacity: .7; }
 body[data-icons] .tile:hover .ico, body[data-icons] .tile:focus-visible .ico { filter: none; opacity: 1; }
 .icon-btn.on { color: var(--accent); }
 
@@ -373,3 +373,5 @@ body.has-tip .layout { padding-bottom: 54px; }
 #suggestList h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin: 16px 0 6px; font-weight: 600; }
 .sg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 2px; }
 .tile.sg { cursor: grab; }
+.ver { font-size: 11px; font-weight: 500; color: var(--dim); letter-spacing: 0; align-self: flex-end; margin-bottom: 3px; }
+.drawer-head .ver { margin-left: 6px; }

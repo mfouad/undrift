@@ -21,6 +21,6 @@ No build step. Upload this folder as it is.
 - Pin the tab, or install it as an app from the address bar.
 
 ## Updating
-After changing any file, bump `VERSION` at the top of `sw.js` so browsers pick up the new copy.
+After changing any file, bump `APP_VERSION` in `version.js` so browsers pick up the new copy. The version shows next to the logo.
 
 Settings are stored in the browser's localStorage. Use Settings > Backup to export or import them.

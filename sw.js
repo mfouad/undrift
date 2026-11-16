@@ -1,6 +1,7 @@
-/* Offline cache + notification click handling. Bump VERSION when you change files. */
-const VERSION = 'focus-home-v16';
-const FILES = ['./', 'index.html', 'style.css', 'shared.js', 'sound.js', 'app.js', 'worker.js',
+/* Offline cache + notification click handling. The cache is named after APP_VERSION in version.js. */
+importScripts('version.js');
+const VERSION = 'undrift-' + APP_VERSION;
+const FILES = ['./', 'index.html', 'style.css', 'version.js', 'shared.js', 'sound.js', 'app.js', 'worker.js',
                'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));

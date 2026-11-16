@@ -912,6 +912,7 @@
   refreshAll();
   lastMin = Math.floor(Date.now() / 60000);
   bindPersonas();
+  $('#ver').textContent = 'v' + APP_VERSION; $('#verSet').textContent = 'v' + APP_VERSION;
   startTicker();
   checkSound();
   fillVoices();
