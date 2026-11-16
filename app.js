@@ -386,10 +386,19 @@
       { src: 'https://icons.duckduckgo.com/ip3/' + d + '.ico', min: 1 }
     ];
   }
+  /* Hosts on this machine or the local network. Loading anything from them makes Chrome
+     ask "access other apps and services on this device", so they get a letter icon. */
+  function isLocalHost(h) {
+    h = String(h || '').toLowerCase();
+    if (h.charAt(0) === '[') return /^\[(::1?|f[cd]|fe80:)/.test(h);     // IPv6 literal
+    return !h.includes('.') || /(^|\.)(localhost|local|internal|lan|home\.arpa)$/.test(h)
+      || /^(127\.|10\.|192\.168\.|169\.254\.|0\.0\.0\.0$)/.test(h)
+      || /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+  }
   function makeIco(it) {
     var url = safeUrl(it.url), ico = el('span', { class: 'ico' }), h = iconHost(url);
-    var list = it.icon && /^(https?:|data:image\/)/i.test(it.icon) ? [{ src: it.icon, min: 1 }]
-      : h ? iconSources(h) : [];
+    var list = it.icon && /^(https?:|data:image\/)/i.test(it.icon) && (/^data:/i.test(it.icon) || !isLocalHost(host(it.icon))) ? [{ src: it.icon, min: 1 }]
+      : h && !isLocalHost(h) ? iconSources(h) : [];
     if (!list.length) { letterIcon(ico, it.name); return ico; }
     var img = el('img', { alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }), n = 0;
     var next = function () {
