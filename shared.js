@@ -151,7 +151,6 @@ var APP = {
   qabilah: A('Qabilah', 'https://qabilah.com', 'Arabic social network for professionals'),
   brainsmingle: A('Brainsmingle', 'https://brainsmingle.com/auth/login', 'Video speed networking, webinars and events for communities'),
   wuzzuf: A('Wuzzuf', 'https://wuzzuf.net/jobs/egypt', 'Jobs in Egypt'),
-  forasna: A('Forasna', 'https://forasna.com', 'Entry-level and blue-collar jobs in Egypt'),
   bayt: A('Bayt', 'https://www.bayt.com', 'Jobs across the Middle East and North Africa'),
   gulftalent: A('GulfTalent', 'https://www.gulftalent.com', 'Professional jobs in the Gulf'),
   akhtaboot: A('Akhtaboot', 'https://www.akhtaboot.com', 'Jobs in Jordan and the Middle East'),
@@ -226,7 +225,7 @@ var PERSONAS = [
   { id: 'jobs', name: 'Job seeker', desc: 'Find roles, apply, track and prepare', groups: [
     { name: 'Daily', items: BASICS.concat(L('docs')) },
     { name: 'Find', items: L('linkedinjobs', 'indeed', 'wellfound', 'wttj', 'glassdoor', 'remoteok', 'wwr', 'codequests') },
-    { name: 'MEA jobs', items: L('wuzzuf', 'forasna', 'bayt', 'gulftalent', 'akhtaboot', 'tanqeeb') },
+    { name: 'MEA jobs', items: L('wuzzuf', 'bayt', 'gulftalent', 'akhtaboot', 'tanqeeb') },
     { name: 'Apply & track', items: L('teal', 'huntr', 'simplify', 'applicanttrust', 'canva') },
     { name: 'Prepare', items: L('leetcode', 'exponent', 'glassdoor', 'meetup', 'brainsmingle', 'qabilah', 'lipost') },
     { name: 'AI', items: AI_APPS } ] }

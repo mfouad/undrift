@@ -378,6 +378,27 @@
   /* Icon sources, tried in order: Google's favicon service, the site's own /favicon.ico,
      then DuckDuckGo's. Google answers unknown sites with a 16px globe, so a tiny result
      from it counts as a miss. If everything fails, a coloured letter is shown. */
+  /* Google's favicon service answers most Google subdomains with the plain "G",
+     so the main Google apps use their official product icons instead. */
+  var GICO = 'https://ssl.gstatic.com/images/branding/product/2x/';
+  var GOOGLE_ICONS = {
+    'mail.google.com': 'gmail_2020q4', 'drive.google.com': 'drive_2020q4', 'docs.google.com': 'docs_2020q4',
+    'sheets.google.com': 'sheets_2020q4', 'slides.google.com': 'slides_2020q4', 'forms.google.com': 'forms_2020q4',
+    'calendar.google.com': 'calendar_2020q4', 'meet.google.com': 'meet_2020q4', 'keep.google.com': 'keep_2020q4',
+    'chat.google.com': 'chat_2020q4', 'sites.google.com': 'sites_2020q4', 'photos.google.com': 'photos',
+    'maps.google.com': 'maps', 'translate.google.com': 'translate', 'classroom.google.com': 'classroom',
+    'contacts.google.com': 'contacts', 'tasks.google.com': 'tasks', 'analytics.google.com': 'analytics',
+    'search.google.com': 'search_console', 'gemini.google.com': 'gemini', 'notebooklm.google.com': 'notebooklm'
+  };
+  function googleIcon(url) {
+    var h = host(url), p = String(url).toLowerCase();
+    if (h === 'docs.google.com') {
+      if (p.indexOf('/spreadsheets') >= 0) h = 'sheets.google.com';
+      else if (p.indexOf('/presentation') >= 0) h = 'slides.google.com';
+      else if (p.indexOf('/forms') >= 0) h = 'forms.google.com';
+    }
+    return GOOGLE_ICONS[h] ? { src: GICO + GOOGLE_ICONS[h] + '_48dp.png', min: 1 } : null;
+  }
   function iconSources(h) {
     var d = encodeURIComponent(h);
     return [
@@ -398,7 +419,7 @@
   function makeIco(it) {
     var url = safeUrl(it.url), ico = el('span', { class: 'ico' }), h = iconHost(url);
     var list = it.icon && /^(https?:|data:image\/)/i.test(it.icon) && (/^data:/i.test(it.icon) || !isLocalHost(host(it.icon))) ? [{ src: it.icon, min: 1 }]
-      : h && !isLocalHost(h) ? iconSources(h) : [];
+      : h && !isLocalHost(h) ? [googleIcon(url)].concat(iconSources(h)).filter(Boolean) : [];
     if (!list.length) { letterIcon(ico, it.name); return ico; }
     var img = el('img', { alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }), n = 0;
     var next = function () {
@@ -863,15 +884,16 @@
     var q = $('#suggestQ').value.trim().toLowerCase(), have = haveUrls(), mine = S.launcher.persona, shown = {}, total = 0;
     box.textContent = '';
     var order = PERSONAS.slice().sort(function (a, b) { return (b.id === mine) - (a.id === mine); });
+    var common = {};   // basics every role shares are listed once; other apps show under each role that uses them
+    BASICS.concat(AI_APPS).forEach(function (it) { common[normUrl(it.url)] = 1; });
     order.forEach(function (p) {
       var apps = personaApps(p).filter(function (it) {
         var k = normUrl(it.url);
-        if (shown[k]) return false;
+        if (shown[k] && common[k]) return false;
         return !q || it.name.toLowerCase().indexOf(q) >= 0 || p.name.toLowerCase().indexOf(q) >= 0;
       });
       if (!apps.length) return;
-      apps.forEach(function (it) { shown[normUrl(it.url)] = 1; });
-      total += apps.length;
+      apps.forEach(function (it) { var k = normUrl(it.url); if (!shown[k]) total++; shown[k] = 1; });
       var grid = el('div', { class: 'sg-grid' });
       apps.forEach(function (it) {
         var where = have[normUrl(it.url)];
