@@ -373,6 +373,12 @@ body.has-tip .layout { padding-bottom: 54px; }
 #suggestList h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin: 16px 0 6px; font-weight: 600; }
 .sg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 2px; }
 .tile.sg { cursor: grab; }
+.tile.sg.have { cursor: pointer; opacity: .55; gap: 2px; }
+.tile.sg.have .ico { filter: grayscale(1); box-shadow: none; }
+.tile.sg.have:hover, .tile.sg.have:focus-visible { opacity: .8; }
+.sg-in { font-size: 10px; color: var(--short); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile.found { animation: found 1.8s ease-out; }
+@keyframes found { 0%, 60% { background: color-mix(in srgb, var(--accent) 35%, transparent); box-shadow: 0 0 0 2px var(--accent); } 100% { background: transparent; box-shadow: none; } }
 .ver { font-size: 11px; font-weight: 500; color: var(--dim); letter-spacing: 0; align-self: flex-end; margin-bottom: 3px; }
 .drawer-head .ver { margin-left: 6px; }
 .task { touch-action: none; user-select: none; cursor: grab; }

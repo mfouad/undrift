@@ -850,7 +850,7 @@
   }
   function haveUrls() {
     var have = {};
-    S.launcher.groups.forEach(function (g) { g.items.forEach(function (it) { have[normUrl(it.url)] = 1; }); });
+    S.launcher.groups.forEach(function (g) { g.items.forEach(function (it) { var k = normUrl(it.url); if (!have[k]) have[k] = g.name || 'Untitled'; }); });
     return have;
   }
   function addSuggested(it, gi) {
@@ -866,7 +866,7 @@
     order.forEach(function (p) {
       var apps = personaApps(p).filter(function (it) {
         var k = normUrl(it.url);
-        if (have[k] || shown[k]) return false;
+        if (shown[k]) return false;
         return !q || it.name.toLowerCase().indexOf(q) >= 0 || p.name.toLowerCase().indexOf(q) >= 0;
       });
       if (!apps.length) return;
@@ -874,6 +874,13 @@
       total += apps.length;
       var grid = el('div', { class: 'sg-grid' });
       apps.forEach(function (it) {
+        var where = have[normUrl(it.url)];
+        if (where) {
+          var h = el('button', { type: 'button', class: 'tile sg have', title: tipFor(it) + '\nAlready in ' + where + ' — click to show it' },
+            [makeIco(it), el('span', { class: 'lbl' }, [el('span', { class: 'lbl-n', text: it.name })]), el('span', { class: 'sg-in', text: '✓ ' + where })]);
+          h.addEventListener('click', function () { showHave(it, where); });
+          grid.appendChild(h); return;
+        }
         var t = el('button', { type: 'button', class: 'tile sg', draggable: 'true', title: tipFor(it) + '\nDrag onto a folder, or click to choose one' },
           [makeIco(it), el('span', { class: 'lbl' }, [el('span', { class: 'lbl-n', text: it.name })])]);
         t.addEventListener('click', function () { openItem(0, -1, { name: it.name, url: it.url, icon: '' }); });
@@ -884,7 +891,17 @@
       box.appendChild(el('h3', { text: p.name + (p.id === mine ? ' · your preset' : '') }));
       box.appendChild(grid);
     });
-    if (!total) box.appendChild(el('p', { class: 'note', text: q ? 'No suggested apps match “' + q + '”.' : 'You already have every suggested app.' }));
+    if (!total) box.appendChild(el('p', { class: 'note', text: 'No suggested apps match “' + q + '”.' }));
+  }
+  /* Point at an app the launcher already has: flash its tile there, or say which folder holds it. */
+  function showHave(it, where) {
+    var k = normUrl(it.url), hit = null;
+    $$('#launcher .tile').forEach(function (a) { if (!hit && normUrl(a.getAttribute('data-url')) === k) hit = a; });
+    toast(it.name + ' is already in ' + where);
+    if (!hit) return;
+    hit.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    hit.classList.remove('found'); void hit.offsetWidth; hit.classList.add('found');
+    setTimeout(function () { hit.classList.remove('found'); }, 1800);
   }
   function openSuggest(on) {
     $('#suggest').classList.toggle('open', on); $('#suggest').setAttribute('aria-hidden', String(!on));
