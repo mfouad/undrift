@@ -19,59 +19,198 @@ var DEFAULTS = {
     groups: [] }
 };
 
-/* Persona presets for the launcher. Feeds (X, LinkedIn, YouTube) link to the page where
-   you make something (compose, post, studio) rather than the scrolling feed. */
-function A(name, url) { return { name: name, url: url }; }
-var AI_APPS = [A('Claude', 'https://claude.ai'), A('ChatGPT', 'https://chatgpt.com'), A('Gemini', 'https://gemini.google.com'), A('Perplexity', 'https://www.perplexity.ai')];
-var BASICS = [A('Gmail', 'https://mail.google.com'), A('Calendar', 'https://calendar.google.com'), A('Drive', 'https://drive.google.com')];
-var X_POST = A('X (post)', 'https://x.com/compose/post'), LI_POST = A('LinkedIn (post)', 'https://www.linkedin.com/feed/?shareActive=true');
+/* Persona presets for the launcher. Feeds (X, LinkedIn, YouTube, Reddit) link to the page
+   where you make something (compose, post, studio) rather than the scrolling feed.
+   Each app has a short description, shown as its tooltip. */
+function A(name, url, desc) { return { name: name, url: url, desc: desc }; }
+var APP = {
+  gmail: A('Gmail', 'https://mail.google.com', 'Email (Google)'),
+  calendar: A('Calendar', 'https://calendar.google.com', 'Meetings and schedule (Google Calendar)'),
+  drive: A('Drive', 'https://drive.google.com', 'Files and shared folders (Google Drive)'),
+  docs: A('Docs', 'https://docs.google.com', 'Write and share documents (Google Docs)'),
+  sheets: A('Sheets', 'https://sheets.google.com', 'Spreadsheets (Google Sheets)'),
+  meet: A('Meet', 'https://meet.google.com', 'Video calls (Google Meet)'),
+  notion: A('Notion', 'https://www.notion.so', 'Docs, wiki and lightweight databases'),
+  whatsapp: A('WhatsApp', 'https://web.whatsapp.com', 'Chats on the web'),
+  slack: A('Slack', 'https://app.slack.com', 'Team chat'),
+  discord: A('Discord', 'https://discord.com/app', 'Community chat servers'),
+  zoom: A('Zoom', 'https://app.zoom.us', 'Video meetings and webinars'),
+  github: A('GitHub', 'https://github.com', 'Code hosting, pull requests and issues'),
+  linear: A('Linear', 'https://linear.app', 'Fast issue tracker and product roadmap'),
+  figma: A('Figma', 'https://www.figma.com', 'Collaborative design and prototyping'),
+  vercel: A('Vercel', 'https://vercel.com/dashboard', 'Deploy and host web apps'),
+  supabase: A('Supabase', 'https://supabase.com/dashboard', 'Postgres database, auth and storage'),
+  cloudflare: A('Cloudflare', 'https://dash.cloudflare.com', 'DNS, CDN, Workers and Pages'),
+  railway: A('Railway', 'https://railway.com/dashboard', 'Deploy servers and databases in a click'),
+  sentry: A('Sentry', 'https://sentry.io', 'Error and performance monitoring'),
+  resend: A('Resend', 'https://resend.com/emails', 'Email API for developers'),
+  localhost: A('localhost', 'http://localhost:3000', 'Your local dev server (port 3000)'),
+  v0: A('v0', 'https://v0.dev', 'Vercel’s AI that builds UI and apps from a prompt'),
+  lovable: A('Lovable', 'https://lovable.dev', 'AI app builder — describe it, get a working app'),
+  bolt: A('Bolt', 'https://bolt.new', 'AI full-stack app builder in the browser'),
+  replit: A('Replit', 'https://replit.com', 'Online IDE with an AI agent and hosting'),
+  cursor: A('Cursor', 'https://cursor.com', 'AI code editor'),
+  mdn: A('MDN', 'https://developer.mozilla.org', 'Web platform docs (HTML, CSS, JS)'),
+  stackoverflow: A('Stack Overflow', 'https://stackoverflow.com', 'Programming Q&A'),
+  npm: A('npm', 'https://www.npmjs.com', 'JavaScript package registry'),
+  stripe: A('Stripe', 'https://dashboard.stripe.com', 'Payments, subscriptions and revenue'),
+  mercury: A('Mercury', 'https://app.mercury.com', 'Banking for startups'),
+  ramp: A('Ramp', 'https://app.ramp.com', 'Corporate cards and spend management'),
+  carta: A('Carta', 'https://app.carta.com', 'Cap table and equity management'),
+  gusto: A('Gusto', 'https://app.gusto.com', 'Payroll, benefits and HR'),
+  deel: A('Deel', 'https://app.deel.com', 'Hire and pay people worldwide'),
+  docusign: A('DocuSign', 'https://app.docusign.com', 'E-signatures for contracts'),
+  quickbooks: A('QuickBooks', 'https://qbo.intuit.com', 'Accounting and bookkeeping'),
+  xero: A('Xero', 'https://go.xero.com', 'Accounting and invoicing'),
+  onepassword: A('1Password', 'https://my.1password.com', 'Shared password manager'),
+  attio: A('Attio', 'https://app.attio.com', 'Modern CRM for deals and relationships'),
+  hubspot: A('HubSpot', 'https://app.hubspot.com', 'CRM, marketing and sales hub'),
+  pipedrive: A('Pipedrive', 'https://app.pipedrive.com', 'Sales pipeline CRM'),
+  salesnav: A('Sales Navigator', 'https://www.linkedin.com/sales/', 'LinkedIn prospecting for sales'),
+  apollo: A('Apollo', 'https://app.apollo.io', 'Lead database and outreach sequences'),
+  clay: A('Clay', 'https://app.clay.com', 'Enrich leads with data and AI'),
+  lemlist: A('lemlist', 'https://app.lemlist.com', 'Cold email and LinkedIn outreach'),
+  fireflies: A('Fireflies', 'https://app.fireflies.ai', 'AI notetaker for meetings'),
+  docsend: A('DocSend', 'https://www.docsend.com', 'Share pitch decks and see who reads them'),
+  crunchbase: A('Crunchbase', 'https://www.crunchbase.com', 'Company and investor research'),
+  calendly: A('Calendly', 'https://calendly.com/app', 'Let people book time with you'),
+  calcom: A('Cal.com', 'https://app.cal.com', 'Open-source scheduling links'),
+  intercom: A('Intercom', 'https://app.intercom.com', 'Customer support chat and help center'),
+  crisp: A('Crisp', 'https://app.crisp.chat', 'Live chat and shared inbox'),
+  helpscout: A('Help Scout', 'https://secure.helpscout.net', 'Support email inbox'),
+  analytics: A('Analytics', 'https://analytics.google.com', 'Website traffic (Google Analytics)'),
+  posthog: A('PostHog', 'https://us.posthog.com', 'Product analytics, session replay and feature flags'),
+  plausible: A('Plausible', 'https://plausible.io/sites', 'Simple, privacy-friendly site analytics'),
+  searchconsole: A('Search Console', 'https://search.google.com/search-console', 'How your site shows up in Google search'),
+  systeme: A('Systeme.io', 'https://systeme.io/dashboard', 'All-in-one funnels, email, courses and sites'),
+  xpost: A('X (post)', 'https://x.com/compose/post', 'Write a post on X — skips the feed'),
+  lipost: A('LinkedIn (post)', 'https://www.linkedin.com/feed/?shareActive=true', 'Write a LinkedIn post — opens straight to the editor'),
+  ytstudio: A('YouTube Studio', 'https://studio.youtube.com', 'Manage your channel and uploads — not the feed'),
+  redditpost: A('Reddit (post)', 'https://www.reddit.com/submit', 'Start a Reddit post — skips the feed'),
+  buffer: A('Buffer', 'https://publish.buffer.com', 'Schedule social posts'),
+  typefully: A('Typefully', 'https://typefully.com', 'Write and schedule threads and posts'),
+  beehiiv: A('Beehiiv', 'https://app.beehiiv.com', 'Newsletter platform'),
+  canva: A('Canva', 'https://www.canva.com', 'Quick graphics, slides and social images'),
+  capcut: A('CapCut', 'https://www.capcut.com', 'Video editing for short-form content'),
+  descript: A('Descript', 'https://web.descript.com', 'Edit video and podcasts by editing text'),
+  opusclip: A('Opus Clip', 'https://www.opus.pro', 'AI turns long videos into short clips'),
+  gamma: A('Gamma', 'https://gamma.app', 'AI-made decks, docs and web pages'),
+  meetup: A('Meetup', 'https://www.meetup.com', 'Find and host local events and groups'),
+  luma: A('Luma', 'https://lu.ma/home', 'Event pages, RSVPs and calendars'),
+  eventbrite: A('Eventbrite', 'https://www.eventbrite.com/organizations/home', 'Ticketing for events'),
+  circle: A('Circle', 'https://app.circle.so', 'Community platform with courses and events'),
+  skool: A('Skool', 'https://www.skool.com', 'Community and courses in one place'),
+  discourse: A('Discourse', 'https://meta.discourse.org', 'Open-source community forums'),
+  commonroom: A('Common Room', 'https://app.commonroom.io', 'See who is active across your community'),
+  tally: A('Tally', 'https://tally.so/dashboard', 'Free forms and surveys'),
+  framer: A('Framer', 'https://framer.com/projects', 'Design and publish websites'),
+  webflow: A('Webflow', 'https://webflow.com/dashboard', 'Visual website builder and CMS'),
+  spline: A('Spline', 'https://app.spline.design', '3D design for the web'),
+  relume: A('Relume', 'https://www.relume.io', 'AI sitemaps and wireframes for websites'),
+  pinterest: A('Pinterest', 'https://www.pinterest.com', 'Visual inspiration boards'),
+  cosmos: A('Cosmos', 'https://www.cosmos.so', 'Calm, ad-free visual inspiration library'),
+  arena: A('Are.na', 'https://www.are.na', 'Collect and connect ideas and references'),
+  mobbin: A('Mobbin', 'https://mobbin.com', 'Library of real app screens and flows'),
+  dribbble: A('Dribbble', 'https://dribbble.com', 'Design showcase and inspiration'),
+  behance: A('Behance', 'https://www.behance.net', 'Creative portfolios'),
+  fonts: A('Google Fonts', 'https://fonts.google.com', 'Free web fonts'),
+  coolors: A('Coolors', 'https://coolors.co', 'Colour palette generator'),
+  unsplash: A('Unsplash', 'https://unsplash.com', 'Free high-quality photos'),
+  iconify: A('Iconify', 'https://icon-sets.iconify.design', 'Huge library of open-source icons'),
+  linkedinjobs: A('LinkedIn Jobs', 'https://www.linkedin.com/jobs/', 'Job search on LinkedIn'),
+  indeed: A('Indeed', 'https://www.indeed.com', 'Large job search engine'),
+  wellfound: A('Wellfound', 'https://wellfound.com/jobs', 'Startup jobs (formerly AngelList Talent)'),
+  glassdoor: A('Glassdoor', 'https://www.glassdoor.com', 'Company reviews, salaries and interview questions'),
+  wttj: A('Welcome to the Jungle', 'https://www.welcometothejungle.com', 'Curated jobs with company profiles'),
+  remoteok: A('Remote OK', 'https://remoteok.com', 'Remote job board'),
+  wwr: A('We Work Remotely', 'https://weworkremotely.com', 'Remote job board'),
+  teal: A('Teal', 'https://www.tealhq.com', 'Resume builder and job application tracker'),
+  huntr: A('Huntr', 'https://huntr.co', 'Track job applications on a board'),
+  simplify: A('Simplify', 'https://simplify.jobs', 'Autofill applications and track them'),
+  leetcode: A('LeetCode', 'https://leetcode.com', 'Coding interview practice'),
+  exponent: A('Exponent', 'https://www.tryexponent.com', 'Interview prep for tech roles'),
+  claude: A('Claude', 'https://claude.ai', 'Anthropic’s AI assistant'),
+  chatgpt: A('ChatGPT', 'https://chatgpt.com', 'OpenAI’s AI assistant'),
+  gemini: A('Gemini', 'https://gemini.google.com', 'Google’s AI assistant'),
+  grok: A('Grok', 'https://grok.com', 'xAI’s AI assistant'),
+  perplexity: A('Perplexity', 'https://www.perplexity.ai', 'AI search with sources'),
+  notebooklm: A('NotebookLM', 'https://notebooklm.google.com', 'Ask questions about your own docs; makes audio overviews')
+};
+function L() { return Array.prototype.map.call(arguments, function (k) { return APP[k]; }); }
+var AI_APPS = L('claude', 'chatgpt', 'gemini', 'grok', 'perplexity', 'notebooklm');
+var BASICS = L('gmail', 'calendar', 'drive');
 var PERSONAS = [
   { id: 'solo', name: 'Solo founder', desc: 'Build it, sell it, run it — alone', groups: [
-    { name: 'Daily', items: BASICS.concat([A('Notion', 'https://www.notion.so'), A('WhatsApp', 'https://web.whatsapp.com')]) },
-    { name: 'Build', items: [A('GitHub', 'https://github.com'), A('Vercel', 'https://vercel.com/dashboard'), A('Supabase', 'https://supabase.com/dashboard'), A('Figma', 'https://www.figma.com'), A('Linear', 'https://linear.app')] },
-    { name: 'Grow', items: [A('Stripe', 'https://dashboard.stripe.com'), X_POST, LI_POST, A('Analytics', 'https://analytics.google.com'), A('YouTube Studio', 'https://studio.youtube.com')] },
+    { name: 'Daily', items: BASICS.concat(L('notion', 'whatsapp')) },
+    { name: 'Build', items: L('github', 'vercel', 'supabase', 'lovable', 'figma', 'linear') },
+    { name: 'Grow', items: L('stripe', 'systeme', 'posthog', 'xpost', 'lipost', 'ytstudio', 'meetup') },
     { name: 'AI', items: AI_APPS } ] },
   { id: 'startup', name: 'Startup founder', desc: 'Team, product, money and fundraising', groups: [
-    { name: 'Team', items: BASICS.slice(0, 2).concat([A('Slack', 'https://app.slack.com'), A('Notion', 'https://www.notion.so'), A('Meet', 'https://meet.google.com')]) },
-    { name: 'Product', items: [A('Linear', 'https://linear.app'), A('GitHub', 'https://github.com'), A('Figma', 'https://www.figma.com'), A('Analytics', 'https://analytics.google.com')] },
-    { name: 'Company', items: [A('Stripe', 'https://dashboard.stripe.com'), A('Mercury', 'https://app.mercury.com'), A('Carta', 'https://app.carta.com'), A('Gusto', 'https://app.gusto.com'), A('DocuSign', 'https://app.docusign.com')] },
-    { name: 'Fundraise', items: [A('Attio', 'https://app.attio.com'), A('DocSend', 'https://www.docsend.com'), A('Crunchbase', 'https://www.crunchbase.com'), LI_POST, A('Calendly', 'https://calendly.com/app')] },
+    { name: 'Team', items: L('gmail', 'calendar', 'slack', 'notion', 'meet') },
+    { name: 'Product', items: L('linear', 'github', 'figma', 'posthog') },
+    { name: 'Company', items: L('stripe', 'mercury', 'ramp', 'carta', 'gusto', 'docusign') },
+    { name: 'Fundraise', items: L('attio', 'docsend', 'crunchbase', 'lipost', 'calendly', 'gamma') },
     { name: 'AI', items: AI_APPS } ] },
   { id: 'builder', name: 'Builder', desc: 'Developer or indie hacker shipping product', groups: [
-    { name: 'Daily', items: BASICS.concat([A('Notion', 'https://www.notion.so')]) },
-    { name: 'Code', items: [A('GitHub', 'https://github.com'), A('localhost', 'http://localhost:3000'), A('Linear', 'https://linear.app'), A('Figma', 'https://www.figma.com')] },
-    { name: 'Ship', items: [A('Vercel', 'https://vercel.com/dashboard'), A('Cloudflare', 'https://dash.cloudflare.com'), A('Supabase', 'https://supabase.com/dashboard'), A('Sentry', 'https://sentry.io')] },
-    { name: 'Docs', items: [A('MDN', 'https://developer.mozilla.org'), A('Stack Overflow', 'https://stackoverflow.com'), A('npm', 'https://www.npmjs.com'), A('Can I use', 'https://caniuse.com')] },
+    { name: 'Daily', items: BASICS.concat(L('notion')) },
+    { name: 'Code', items: L('github', 'localhost', 'cursor', 'linear', 'figma') },
+    { name: 'Ship', items: L('vercel', 'cloudflare', 'railway', 'supabase', 'resend', 'sentry', 'posthog') },
+    { name: 'AI builders', items: L('v0', 'lovable', 'bolt', 'replit') },
+    { name: 'Docs', items: L('mdn', 'stackoverflow', 'npm') },
     { name: 'AI', items: AI_APPS } ] },
   { id: 'marketer', name: 'Marketer / creator', desc: 'Content, social and growth', groups: [
-    { name: 'Daily', items: BASICS.concat([A('Notion', 'https://www.notion.so')]) },
-    { name: 'Publish', items: [X_POST, LI_POST, A('Buffer', 'https://publish.buffer.com'), A('Typefully', 'https://typefully.com'), A('Beehiiv', 'https://app.beehiiv.com')] },
-    { name: 'Create', items: [A('Canva', 'https://www.canva.com'), A('CapCut', 'https://www.capcut.com'), A('YouTube Studio', 'https://studio.youtube.com'), A('Descript', 'https://web.descript.com')] },
-    { name: 'Measure', items: [A('Analytics', 'https://analytics.google.com'), A('Search Console', 'https://search.google.com/search-console'), A('Plausible', 'https://plausible.io/sites')] },
+    { name: 'Daily', items: BASICS.concat(L('notion')) },
+    { name: 'Publish', items: L('xpost', 'lipost', 'buffer', 'typefully', 'beehiiv', 'systeme') },
+    { name: 'Create', items: L('canva', 'capcut', 'descript', 'opusclip', 'gamma', 'ytstudio') },
+    { name: 'Measure', items: L('analytics', 'posthog', 'searchconsole', 'plausible') },
+    { name: 'AI', items: AI_APPS } ] },
+  { id: 'community', name: 'Community manager', desc: 'Members, events and engagement', groups: [
+    { name: 'Daily', items: BASICS.concat(L('notion', 'slack')) },
+    { name: 'Community', items: L('discord', 'circle', 'skool', 'discourse', 'whatsapp') },
+    { name: 'Events', items: L('meetup', 'luma', 'eventbrite', 'zoom', 'calendly') },
+    { name: 'Engage', items: L('xpost', 'lipost', 'redditpost', 'typefully', 'beehiiv', 'canva') },
+    { name: 'Measure', items: L('commonroom', 'tally', 'posthog', 'sheets') },
     { name: 'AI', items: AI_APPS } ] },
   { id: 'sales', name: 'Sales / customer', desc: 'Pipeline, meetings and support', groups: [
-    { name: 'Daily', items: BASICS.concat([A('Slack', 'https://app.slack.com')]) },
-    { name: 'Pipeline', items: [A('HubSpot', 'https://app.hubspot.com'), A('Attio', 'https://app.attio.com'), A('Pipedrive', 'https://app.pipedrive.com'), A('Sales Navigator', 'https://www.linkedin.com/sales/')] },
-    { name: 'Meetings', items: [A('Calendly', 'https://calendly.com/app'), A('Cal.com', 'https://app.cal.com'), A('Meet', 'https://meet.google.com'), A('Zoom', 'https://app.zoom.us')] },
-    { name: 'Support', items: [A('Intercom', 'https://app.intercom.com'), A('Crisp', 'https://app.crisp.chat'), A('Help Scout', 'https://secure.helpscout.net')] },
+    { name: 'Daily', items: BASICS.concat(L('slack')) },
+    { name: 'Pipeline', items: L('hubspot', 'attio', 'pipedrive', 'salesnav') },
+    { name: 'Prospect', items: L('apollo', 'clay', 'lemlist') },
+    { name: 'Meetings', items: L('calendly', 'calcom', 'meet', 'zoom', 'fireflies') },
+    { name: 'Support', items: L('intercom', 'crisp', 'helpscout') },
     { name: 'AI', items: AI_APPS } ] },
   { id: 'designer', name: 'Designer', desc: 'Product, brand and web design', groups: [
-    { name: 'Daily', items: BASICS.concat([A('Notion', 'https://www.notion.so')]) },
-    { name: 'Design', items: [A('Figma', 'https://www.figma.com'), A('Framer', 'https://framer.com/projects'), A('Webflow', 'https://webflow.com/dashboard'), A('Spline', 'https://app.spline.design')] },
-    { name: 'Inspire', items: [A('Mobbin', 'https://mobbin.com'), A('Dribbble', 'https://dribbble.com'), A('Behance', 'https://www.behance.net')] },
-    { name: 'Assets', items: [A('Google Fonts', 'https://fonts.google.com'), A('Coolors', 'https://coolors.co'), A('Unsplash', 'https://unsplash.com'), A('Iconify', 'https://icon-sets.iconify.design')] },
-    { name: 'AI', items: AI_APPS } ] },
+    { name: 'Daily', items: BASICS.concat(L('notion')) },
+    { name: 'Design', items: L('figma', 'framer', 'webflow', 'relume', 'spline') },
+    { name: 'Inspire', items: L('pinterest', 'cosmos', 'arena', 'mobbin', 'dribbble', 'behance') },
+    { name: 'Assets', items: L('fonts', 'coolors', 'unsplash', 'iconify') },
+    { name: 'AI', items: AI_APPS.concat(L('v0')) } ] },
   { id: 'ops', name: 'Ops / admin', desc: 'Money, people and paperwork', groups: [
-    { name: 'Daily', items: BASICS.concat([A('Sheets', 'https://sheets.google.com')]) },
-    { name: 'Money', items: [A('QuickBooks', 'https://qbo.intuit.com'), A('Xero', 'https://go.xero.com'), A('Mercury', 'https://app.mercury.com'), A('Stripe', 'https://dashboard.stripe.com')] },
-    { name: 'People', items: [A('Gusto', 'https://app.gusto.com'), A('Deel', 'https://app.deel.com'), A('Slack', 'https://app.slack.com')] },
-    { name: 'Docs', items: [A('DocuSign', 'https://app.docusign.com'), A('1Password', 'https://my.1password.com'), A('Notion', 'https://www.notion.so')] },
+    { name: 'Daily', items: BASICS.concat(L('sheets')) },
+    { name: 'Money', items: L('quickbooks', 'xero', 'mercury', 'ramp', 'stripe') },
+    { name: 'People', items: L('gusto', 'deel', 'slack') },
+    { name: 'Docs', items: L('docusign', 'onepassword', 'notion', 'tally') },
+    { name: 'AI', items: AI_APPS } ] },
+  { id: 'jobs', name: 'Job seeker', desc: 'Find roles, apply, track and prepare', groups: [
+    { name: 'Daily', items: BASICS.concat(L('docs')) },
+    { name: 'Find', items: L('linkedinjobs', 'indeed', 'wellfound', 'wttj', 'glassdoor', 'remoteok', 'wwr') },
+    { name: 'Apply & track', items: L('teal', 'huntr', 'simplify', 'canva') },
+    { name: 'Prepare', items: L('leetcode', 'exponent', 'glassdoor', 'meetup', 'lipost') },
     { name: 'AI', items: AI_APPS } ] }
 ];
+/* url -> description, for tooltips on any saved app that matches a known one. */
+var APP_DESC = {};
+Object.keys(APP).forEach(function (k) { APP_DESC[String(APP[k].url).replace(/\/+$/, '').toLowerCase()] = APP[k].desc; });
+function appDesc(it) {
+  return (it && it.desc) || APP_DESC[String(it && it.url || '').replace(/\/+$/, '').toLowerCase()] || '';
+}
 /* A fresh copy of a persona's folders, with ids. */
 function personaGroups(id) {
   var p = PERSONAS.filter(function (x) { return x.id === id; })[0] || PERSONAS[0];
-  return JSON.parse(JSON.stringify(p.groups)).map(function (g, i) { g.id = p.id + i + Math.random().toString(36).slice(2, 6); return g; });
+  return JSON.parse(JSON.stringify(p.groups)).map(function (g, i) {
+    g.id = p.id + i + Math.random().toString(36).slice(2, 6);
+    g.items.forEach(function (it) { delete it.desc; });   // descriptions come from the catalog
+    return g;
+  });
 }
 DEFAULTS.launcher.groups = personaGroups('solo');
 

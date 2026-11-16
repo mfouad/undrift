@@ -356,6 +356,7 @@
   }
   var ICO_MAX = '<svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
   var ICO_MIN = '<svg viewBox="0 0 24 24"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>';
+  function tipFor(it) { var d = appDesc(it); return d ? it.name + ' — ' + d : it.name; }
   function makeIco(it) {
     var url = safeUrl(it.url), ico = el('span', { class: 'ico' }), h = host(url);
     var src = it.icon && /^(https?:|data:image\/)/i.test(it.icon) ? it.icon
@@ -377,7 +378,7 @@
       var tiles = el('div', { class: 'tiles' });
       g.items.forEach(function (it, ii) {
         var url = safeUrl(it.url), ico = makeIco(it);
-        var a = el('a', { class: 'tile', href: url || '#', title: it.name, 'data-url': url, draggable: 'true',
+        var a = el('a', { class: 'tile', href: url || '#', title: tipFor(it), 'data-url': url, draggable: 'true',
           target: S.launcher.newTab ? '_blank' : false, rel: 'noopener noreferrer' },
           [ico, el('span', { class: 'lbl' }, [el('span', { class: 'lbl-n', text: it.name }), launchBadge(url)])]);
         a.addEventListener('click', function () { if (url) { countLaunch(url); refreshBadges(); } });
@@ -674,7 +675,7 @@
         applyPersona(p.id); dlg.close(); toast('Folders set up for ' + p.name);
       } }, [el('b', { text: p.name }), el('span', { text: p.desc }),
             el('small', { text: p.groups.map(function (g) { return g.name; }).join(' · ') }),
-            el('span', { class: 'p-icons' }, distinctApps(p).slice(0, 12).map(function (it) { var i = makeIco(it); i.title = it.name; return i; }))]));
+            el('span', { class: 'p-icons' }, distinctApps(p).slice(0, 12).map(function (it) { var i = makeIco(it); i.title = tipFor(it); return i; }))]));
       sel.appendChild(el('option', { value: p.id, text: p.name }));
     });
     $('#personaSkip').addEventListener('click', function () { S.launcher.persona = 'solo'; save(); dlg.close(); });
@@ -733,7 +734,7 @@
       total += apps.length;
       var grid = el('div', { class: 'sg-grid' });
       apps.forEach(function (it) {
-        var t = el('button', { type: 'button', class: 'tile sg', draggable: 'true', title: 'Drag onto a folder, or click to choose one' },
+        var t = el('button', { type: 'button', class: 'tile sg', draggable: 'true', title: tipFor(it) + '\nDrag onto a folder, or click to choose one' },
           [makeIco(it), el('span', { class: 'lbl' }, [el('span', { class: 'lbl-n', text: it.name })])]);
         t.addEventListener('click', function () { openItem(0, -1, { name: it.name, url: it.url, icon: '' }); });
         t.addEventListener('dragstart', function (e) { dragNew = it; t.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', it.url); });
