@@ -235,7 +235,7 @@
   <form method="dialog" id="itemForm">
     <h3 id="itemTitle">Add bookmark</h3>
     <label>Name<input name="name" required></label>
-    <label>URL<input name="url" required placeholder="example.com"></label>
+    <label>URL <small>a web address, or an app link like slack://open</small><input name="url" required placeholder="example.com or slack://open"></label>
     <label>Custom icon URL <small>optional</small><input name="icon" placeholder="leave empty to use the site's favicon"></label>
     <label>Folder<select name="group" id="itemGroup"></select></label>
     <div class="dlg-btns">
@@ -248,10 +248,9 @@
 </dialog>
 
 <dialog id="personaDlg" class="persona-dlg">
-  <h3>Welcome to Undrift</h3>
+  <div class="p-head"><h3>Welcome to Undrift</h3><button type="button" class="btn" id="personaSkip">Skip — use Solo founder</button></div>
   <p class="note">Pick what you do and we'll set up your app folders. You can change everything later in Settings › Folders.</p>
   <div class="personas" id="personaList"></div>
-  <div class="dlg-btns"><span class="grow"></span><button type="button" class="btn" id="personaSkip">Skip — use Solo founder</button></div>
 </dialog>
 
 <dialog id="slotDlg">

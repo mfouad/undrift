@@ -298,11 +298,26 @@
     var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
     a.remove(); return ok;
   }
+  /* Web addresses and app links (slack://, zoommtg://, notion://, spotify: …).
+     Schemes that can run code in the page are never allowed. */
+  var BLOCKED_SCHEMES = /^(javascript|data|vbscript|blob|about|filesystem):$/;
   function safeUrl(u) {
     u = String(u || '').trim();
     if (!u) return '';
-    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
-    try { var p = new URL(u); return /^(https?|mailto|tel|chrome|file):$/.test(p.protocol) ? p.href : ''; } catch (e) { return ''; }
+    if (/^[\w.-]+:\d+(\/|$)/.test(u)) u = 'http://' + u;               // localhost:3000 is a host, not a scheme
+    else if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+    try { var p = new URL(u); return BLOCKED_SCHEMES.test(p.protocol) ? '' : p.href; } catch (e) { return ''; }
+  }
+  function isAppLink(u) { return !!u && !/^(https?|file|chrome):/i.test(u); }
+  /* For app links, borrow the icon of the app's website. */
+  var APP_SITES = { slack: 'slack.com', zoommtg: 'zoom.us', zoomus: 'zoom.us', notion: 'notion.so', figma: 'figma.com',
+    discord: 'discord.com', spotify: 'spotify.com', vscode: 'code.visualstudio.com', cursor: 'cursor.com',
+    msteams: 'teams.microsoft.com', obsidian: 'obsidian.md', linear: 'linear.app', whatsapp: 'whatsapp.com',
+    tg: 'telegram.org', mailto: 'mail.google.com', craftdocs: 'craft.do', things: 'culturedcode.com', raycast: 'raycast.com' };
+  function iconHost(u) {
+    if (!isAppLink(u)) return host(u);
+    var scheme = String(u).split(':')[0].toLowerCase();
+    return APP_SITES[scheme] || '';
   }
   function bindAsk() {
     var q = $('#q');
@@ -356,16 +371,35 @@
   }
   var ICO_MAX = '<svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
   var ICO_MIN = '<svg viewBox="0 0 24 24"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>';
-  function tipFor(it) { var d = appDesc(it); return d ? it.name + ' — ' + d : it.name; }
+  function tipFor(it) {
+    var d = appDesc(it), app = isAppLink(safeUrl(it.url));
+    return (d ? it.name + ' — ' + d : it.name) + (app ? ' (opens the app)' : '');
+  }
+  /* Icon sources, tried in order: Google's favicon service, the site's own /favicon.ico,
+     then DuckDuckGo's. Google answers unknown sites with a 16px globe, so a tiny result
+     from it counts as a miss. If everything fails, a coloured letter is shown. */
+  function iconSources(h) {
+    var d = encodeURIComponent(h);
+    return [
+      { src: 'https://www.google.com/s2/favicons?domain=' + d + '&sz=64', min: 17 },
+      { src: 'https://' + h + '/favicon.ico', min: 1 },
+      { src: 'https://icons.duckduckgo.com/ip3/' + d + '.ico', min: 1 }
+    ];
+  }
   function makeIco(it) {
-    var url = safeUrl(it.url), ico = el('span', { class: 'ico' }), h = host(url);
-    var src = it.icon && /^(https?:|data:image\/)/i.test(it.icon) ? it.icon
-      : h ? 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(h) + '&sz=64' : '';
-    if (src) {
-      var img = el('img', { alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' });
-      img.addEventListener('error', function () { img.remove(); letterIcon(ico, it.name); });
-      img.src = src; ico.appendChild(img);
-    } else letterIcon(ico, it.name);
+    var url = safeUrl(it.url), ico = el('span', { class: 'ico' }), h = iconHost(url);
+    var list = it.icon && /^(https?:|data:image\/)/i.test(it.icon) ? [{ src: it.icon, min: 1 }]
+      : h ? iconSources(h) : [];
+    if (!list.length) { letterIcon(ico, it.name); return ico; }
+    var img = el('img', { alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }), n = 0;
+    var next = function () {
+      n++;
+      if (n < list.length) img.src = list[n].src;
+      else { img.remove(); letterIcon(ico, it.name); }
+    };
+    img.addEventListener('error', next);
+    img.addEventListener('load', function () { if (img.naturalWidth < list[n].min) next(); });
+    img.src = list[0].src; ico.appendChild(img);
     return ico;
   }
   function renderLauncher() {
@@ -379,7 +413,7 @@
       g.items.forEach(function (it, ii) {
         var url = safeUrl(it.url), ico = makeIco(it);
         var a = el('a', { class: 'tile', href: url || '#', title: tipFor(it), 'data-url': url, draggable: 'true',
-          target: S.launcher.newTab ? '_blank' : false, rel: 'noopener noreferrer' },
+          target: S.launcher.newTab && !isAppLink(url) ? '_blank' : false, rel: 'noopener noreferrer' },
           [ico, el('span', { class: 'lbl' }, [el('span', { class: 'lbl-n', text: it.name }), launchBadge(url)])]);
         a.addEventListener('click', function () { if (url) { countLaunch(url); refreshBadges(); } });
         a.addEventListener('auxclick', function (e) { if (e.button === 1 && url) { countLaunch(url); refreshBadges(); } });
@@ -475,7 +509,11 @@
   }
   function openAll(g) {
     var blocked = 0;
-    g.items.forEach(function (it) { var u = safeUrl(it.url); if (!u) return; if (!window.open(u, '_blank')) blocked++; else countLaunch(u); });
+    g.items.forEach(function (it) {
+      var u = safeUrl(it.url); if (!u) return;
+      if (isAppLink(u)) { countLaunch(u); var f = el('iframe', { src: u, style: 'display:none' }); document.body.appendChild(f); setTimeout(function () { f.remove(); }, 2000); return; }
+      if (!window.open(u, '_blank')) blocked++; else countLaunch(u);
+    });
     refreshBadges();
     if (blocked) toast('Chrome blocked ' + blocked + ' tab(s) — allow pop-ups for this site to use “open all”');
   }
@@ -576,7 +614,14 @@
     else run();
   }
   /* Ticking a block done is a big deal: confetti, a bright chime, and a count for today. */
+  /* PL is reloaded from storage now and then, so blocks on screen can hold an old copy
+     of their task. Always act on the live one, found by id. */
+  function liveTask(t) {
+    if (!t) return null;
+    return PL.tasks.filter(function (x) { return x.id === t.id; })[0] || null;
+  }
   function toggleDone(t, b) {
+    t = liveTask(t); if (!t) return renderCal(true);
     t.done = !t.done; savePlan();
     if (t.done) celebrate(t, b);
     renderCal(true); renderPomo();
@@ -645,7 +690,7 @@
       calDragging = false; b.classList.remove('moving');
       if (!moved) { td.textContent = tdText; return openSlot(t, t.start); }
       if (newStart !== t.start) {
-        t.start = newStart;
+        t = liveTask(t) || t; t.start = newStart;
         if (newStart > Date.now()) t.announced = false;   // announce again when its new time comes
         savePlan(); toast('Moved to ' + fmtTime(new Date(newStart)));
       }
@@ -733,12 +778,15 @@
     $$('#slotDur button').forEach(function (b) { b.addEventListener('click', function () { setDur(Number(b.dataset.d)); slotEdit.upd(); }); });
     $('#slotCancel').addEventListener('click', function () { dlg.close(); });
     $('#slotDelete').addEventListener('click', function () {
-      PL.tasks = PL.tasks.filter(function (x) { return x !== slotEdit.task; }); savePlan(); renderCal(true); renderPomo(); dlg.close();
+      var id = slotEdit.task && slotEdit.task.id;
+      PL.tasks = PL.tasks.filter(function (x) { return x.id !== id; }); savePlan(); renderCal(true); renderPomo(); dlg.close();
     });
     f.addEventListener('submit', function (e) {
       e.preventDefault();
       var title = f.elements.title.value.trim(); if (!title) return;
-      if (slotEdit.task) { slotEdit.task.title = title; slotEdit.task.dur = slotEdit.dur; slotEdit.task.done = f.elements.done.checked; }
+      var live = liveTask(slotEdit.task);
+      if (slotEdit.task && !live) { toast('That block was removed in another tab'); renderCal(true); return dlg.close(); }
+      if (live) { slotEdit.task = live; slotEdit.task.title = title; slotEdit.task.dur = slotEdit.dur; slotEdit.task.done = f.elements.done.checked; }
       else PL.tasks.push({ id: uid(), start: slotEdit.start, dur: slotEdit.dur, title: title, done: false });
       savePlan(); renderCal(true); renderPomo(); dlg.close();
     });

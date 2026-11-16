@@ -329,16 +329,16 @@ dialog h3 { margin: 0 0 12px; font-weight: 600; }
 dialog label { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; font-size: 13px; color: var(--dim); }
 dialog label small { display: inline; }
 dialog input, dialog select { color: var(--fg); font-size: 15px; }
-.persona-dlg { width: min(720px, 94vw); }
-.personas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 14px 0 16px; }
+.persona-dlg { width: min(980px, 94vw); }
+.personas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin: 10px 0 10px; }
 .persona {
-  text-align: left; display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 12px;
+  text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 12px;
   border: 1px solid var(--faint); background: var(--field);
 }
 .persona:hover, .persona:focus-visible { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); outline: 0; }
 .persona b { font-size: 15px; }
 .persona span { font-size: 13px; color: var(--dim); }
-.p-icons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.p-icons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .p-icons .ico { width: 20px; height: 20px; border-radius: 6px; box-shadow: none; }
 .p-icons .ico.letter { font-size: 10px; }
 .persona small { font-size: 11px; color: var(--dim); opacity: .8; margin-top: 4px; }
@@ -390,3 +390,6 @@ body.has-tip .layout { padding-bottom: 54px; }
 .task.done { border-left-color: var(--short); background: color-mix(in srgb, var(--short) 18%, var(--panel)); }
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
 .confetti i { position: absolute; left: 0; top: 0; width: 8px; height: 12px; border-radius: 2px; will-change: transform; }
+.persona-dlg .note { margin: 4px 0; }
+.p-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.p-head h3 { margin: 0; }
