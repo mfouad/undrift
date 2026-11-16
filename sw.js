@@ -1,5 +1,5 @@
 /* Offline cache + notification click handling. Bump VERSION when you change files. */
-const VERSION = 'focus-home-v4';
+const VERSION = 'focus-home-v15';
 const FILES = ['./', 'index.html', 'style.css', 'shared.js', 'sound.js', 'app.js', 'worker.js',
                'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', (e) => {
